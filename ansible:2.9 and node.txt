@@ -24,6 +24,21 @@ ansible --version
 exit
 
 root@demo/ec2user :vim Dockerfile
+
+######################################
+for ansible
+_____________________________________________
+$for ansible control node
+
+yum install epil-release
+#ansible package for installation
+
+yum install ansible 
+
++++++++++++++++++++++++++++++++++++++++++++++
+
+
+########################################
 +++++++++++++++++++++++++++++++++++++++++++++++
 
 FROM centos
@@ -45,23 +60,20 @@ CMD ["/usr/sbin/sshd","-D"]
 RUN rm -f /var/run/nologin
 
 
+#add user
+#password 
+#user permission ALL
+#delete nologinfile as container logout from foreground
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-_____________________________________________
-$for ansible control node
-
-yum install epil-release
-yum install ansible vim sudo openssh-server
-systemctl start sshd
-systemctl enable sshd
-+++++++++++++++++++++++++++++++++++++++++++++
 
 
 
 docker build -t riteshk2311/ansible:2.9 . 
 #(. for current directory)
  docker run -itd --name a-ctrl -p 7999:22 riteshk2311/ansible:2.9
+ 
+ #port forwarding to random port
+ #fireall --cmd
 
 #docker login
 
