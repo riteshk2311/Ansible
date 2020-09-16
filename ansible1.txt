@@ -1,0 +1,263 @@
+Example
+
+3 AMI/Instances
+
+1 a-cntrl    ip :  52.66.248.108
+2 mng-host1  ip :  13.235.81.126
+3 mng-host2  ip :  15.206.163.160
+
+
+13.235.81.126
+15.206.163.160
+
+1 a-cntrl:
+
+
+connect 
+
+sudo -i
+
+passwd root
+#password
+#password
+
+#for ssh with password as to coonect with host
+vim /etc/ssh/sshd_config
+i  
+(insert)
+password authentication yes
+:wq 
+(save and exit)
+systemctl restart sshd
+
+hostnamectl set-hostname a-cntrl
+
+sudo -i
+#[root@a-cntrl ~]# 
+
+exit
+
+2 mng-host1
+
+connect 
+
+sudo -i
+
+passwd root
+#password
+#password
+
+#for ssh with password as to coonect with host
+vim /etc/ssh/sshd_config
+i  
+(insert)
+password authentication yes
+:wq 
+(save and exit)
+
+systemctl restart sshd
+
+hostnamectl set-hostname mng-host1
+
+sudo -i
+#[root@mng-host1 ~]# 
+
+2 mng-host2
+
+connect 
+
+sudo -i
+
+passwd root
+#password
+#password
+
+#for ssh with password as to coonect with host
+vim /etc/ssh/sshd_config
+i  
+(insert)
+password authentication yes
+:wq 
+(save and exit)
+
+systemctl restart sshd
+
+hostnamectl set-hostname mng-host2
+
+sudo -i
+#[root@mng-host2 ~]# 
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 a-cntrl
+
+generate finger print by connecting both machine with directly root
+as example
+ssh root@13.235.81.126
+ssh root@15.206.163.160
+
+yum install ansible
+amazon-linux-extras install ansible2 -y
+
+ls
+mkdir aws
+ls
+cd aws/
+ls
+vim inventory
+
+i
+[webservers]     #denote group   
+13.235.81.126     #user
+15.206.163.160
+
+esc+:wq
+
+cat inventory
+
+[root@a-cntrl aws]# cat inventory
+[webservers]
+13.235.81.126
+15.206.163.160
+
+#for host
+
+[root@a-cntrl aws]# ansible webservers --list-hosts -v -i inventory
+Using /etc/ansible/ansible.cfg as config file
+  hosts (2):
+    13.235.81.126
+    15.206.163.160
+[root@a-cntrl aws]#
+
+vim /etc/ansible/ansible.cfg
+
+
+Example
+: we have to change the library of inventory
+
+
+[defaults]
+
+# some basic default values...
+
+#inventory      = /etc/ansible/hosts
+inventory        = /root/aws/inventory
+#library 	=/usr/modules
+#module_utils   = /usr/share/my_module_utils/
+#remote_tmp     = ~/.ansible/tmp
+#local_tmp      = ~/.ansible/tmp
+#plugin_filters_cfg = /etc/ansible/plugin_filters.yml
+#forks          = 5
+#poll_interval  = 15
+#sudo_user      = root
+#ask_sudo_pass = True
+#ask_pass      = True
+#transport      = smart
+#remote_port    = 22
+#module_lang    = C
+#module_set_locale = False
+
+##########
+Ansible module name and written in python
+
+[root@a-cntrl aws]# vim /etc/ansible/ansible.cfg
+
+[root@a-cntrl aws]# groupadd bhopal
+[root@a-cntrl aws]# groupadd indore
+[root@a-cntrl aws]# useradd ritesh -g bhopal -G indore -u 2000
+[root@a-cntrl aws]# useradd prashuk -g indore -G bhopal -u 3000
+[root@a-cntrl aws]# cat inventory
+[webservers]
+13.235.81.126
+15.206.163.160
+#for user add
+
+[root@a-cntrl aws]# ansible webservers -m user -a'name=ritesh state=present' -h
+
+#for installing httpd
+
+[root@a-cntrl aws]# ansible webservers -m yum -a'name=httpd state=present' -k
+
+for installong docker
+
+[root@a-cntrl aws]# ansible webservers -m yum -a'name=docker state=present' -k
+
+
+
+#for service start
+
+[root@a-cntrl aws]# ansible webservers -m service -a'name=docker state=started enabled=true' -k
+SSH password:
+
+#for installing git
+
+[root@a-cntrl aws]# ansible webservers -m yum -a'name=git state=present' -k
+
+#for cloning git
+
+[root@a-cntrl aws]# ansible webservers -m git -a'repo=https://github.com/riteshk2311/webpage.git dest=/var/www/html clone=yes' -k
+SSH password:
+
+#for service
+
+[root@a-cntrl aws]# ansible webservers -m service -a'name=httpd state=started enabled=true' -k
+SSH password:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+<h1>DOCKER</h1>
+
+#python based
+
+#pip
+[root@a-cntrl aws]# yum install python2-pip -y
+
+#docker
+[root@a-cntrl aws]# pip install docker-py
+
+
+[root@a-cntrl aws]# ansible webservers -m docker_image -a'name=riteshk2311/demo-app1 source=pull' -k
+
+[root@a-cntrl aws]# ansible webservers -m docker_container -a'name=app1 state=present image=riteshk2311/demo-app1' -k
+
+[root@a-cntrl ec2-user]# sudo su
+[root@a-cntrl ec2-user]# sudo -i
+[root@a-cntrl ~]# cd aws/
+[root@a-cntrl aws]# vim dep.yml
+
+[root@a-cntrl aws]# cat dep.yml
+---
+ - name: deploy user
+   hosts: webservers
+   vars:
+       myuser: ritesh
+   tasks:
+    - name: create user {{ myuser }}
+      user:
+       name: "{{ myuser }}"
+       state: present
+[root@a-cntrl aws]# ansible-playbook dep.yml -k
+SSH password:
+
+PLAY [deploy user] ************************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ********************************************************************************************************************************************************************************************
+[WARNING]: Platform linux on host 15.206.163.160 is using the discovered Python interpreter at /usr/bin/python, but future installation of another Python interpreter could change this. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information.
+ok: [15.206.163.160]
+[WARNING]: Platform linux on host 13.235.81.126 is using the discovered Python interpreter at /usr/bin/python, but future installation of another Python interpreter could change this. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information.
+ok: [13.235.81.126]
+
+TASK [create user ritesh] *****************************************************************************************************************************************************************************************
+ok: [15.206.163.160]
+ok: [13.235.81.126]
+
+PLAY RECAP ********************************************************************************************************************************************************************************************************
+13.235.81.126              : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+15.206.163.160             : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+[root@a-cntrl aws]#
+
+
+
+ 
