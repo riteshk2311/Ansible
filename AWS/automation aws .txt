@@ -1,0 +1,33 @@
+---
+ - name: depoly aws ec2 instances
+   hosts: localhost
+   vars_files:
+     - variable.yml
+   tasks:
+    - name: example ec2 group
+      ec2_group:
+       name: example
+       description: an example EC2 group
+       vpc_id: vpc-91ecf5f9
+       region: ap-south-1
+       aws_secret_key: "{{ S_KEY }}"
+       aws_access_key: "{{ A_KEY }}"
+       rules:
+         - proto: tcp
+           from_port: 22
+           to_port: 22
+           cidr_ip: 0.0.0.0/0
+  
+    - name: example ec2 group
+      ec2:
+       key_name: edu
+       instance_type: t2.micro
+       region: ap-south-1
+       image: ami-052c08d70def0ac62
+       wait: yes
+       group: example
+       count: 3
+       vpc_subnet_id: subnet-181b6c54
+       assign_public_ip: yes
+       aws_secret_key: "{{ S_KEY }}"
+       aws_access_key: "{{ A_KEY }}"
